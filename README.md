@@ -1,105 +1,57 @@
-# EmberCal — VS Code edition
+# EmberCal — frontend
 
-A local React/TypeScript fire-activity explorer with a Node server for protected NASA FIRMS requests. Includes complete source, saved observed datasets, tests, optional Python tools, and VS Code tasks/debug settings.
+The React/TypeScript design for EmberCal, a fire-activity explorer. **This repository is frontend only: there is no backend.** Every page renders using mock data, so the whole design can be built and reviewed before a backend exists.
 
-## Fastest start (prebuilt app)
+## Run it
 
-Install Node.js 22/24, open the extracted folder in VS Code, and run `npm start`. Open **http://127.0.0.1:3000**. The ZIP includes a prebuilt bundle, so this path needs no dependency install. To edit the app with hot reload, follow the development steps below.
-
-## Develop in VS Code
-
-1. Install **Node.js 22 LTS or 24 LTS**. Open the extracted `embercal` folder in VS Code.
-2. Open **Terminal → New Terminal** and run:
-
-   ```sh
-   npm ci
-   npm run dev
-   ```
-
-3. Open **http://127.0.0.1:5173**. No separate build or Python installation is required.
-
-The development command starts Vite and the local API together. Stop both with **Ctrl+C**. You can also use **Terminal → Run Task → EmberCal: dev**. The optional **EmberCal: launch in Chrome** debug configuration starts the app and opens Chrome.
-
-## Enable live NASA refresh
-
-Saved observed records work without an API key. To refresh them:
-
-1. Copy `.env.example` to a file named `.env` in the project root. Use VS Code Explorer, or `Copy-Item .env.example .env` in PowerShell / `cp .env.example .env` on macOS or Linux.
-2. Paste your own key after `FIRMS_MAP_KEY=` in `.env`.
-3. Restart `npm run dev`, open **Recent detections**, and choose **Refresh observations**.
-
-The supplied chat key is deliberately **not included in the download**. `.env` is ignored by Git and Docker. The local Node server reads the key; browser code never receives it. Do not prefix this variable with `VITE_`.
-
-A refresh makes three fixed-region source requests, each using FIRMS' supported five-day window. All three must succeed before the cached snapshot changes. Successful snapshots are reused for 15 minutes within the server process. The cache resets on restart; no scheduled/background monitoring is enabled.
-
-## What works in this release
-
-- Overview, historical demo explorer, Methods, Accuracy, and watch-area pages.
-- Three regions: Sri Lanka, Pantanal, and New South Wales.
-- Map rectangle/polygon/circle tools, coordinate/radius and bounding-box forms, GeoJSON upload.
-- Historical calendar with raw/harmonized/anomaly modes, seasonal charts, annual ranking, tables, and historical comparisons.
-- CSV, PNG and PDF exports; region sharing; browser-local watch areas and mock alert outbox.
-- Observed recent FIRMS detections with map/table views, sensor filtering, bounding-box selection, acquisition times, raw sensor confidence and CSV export.
-- Production build and local production server; optional Python API, math tests, fixture reproduction, and archive-to-Parquet import.
-
-**The historical calendar is still synthetic.** Its custom-area counts are bounding-box area estimates, not calibrated spatial queries. Recent observations are real NASA FIRMS records, but remain raw NRT detections: no validated fire-confidence model or industrial mask is applied. Watch alerts are mocked locally and send no email/Telegram. Ground-truth validation, full historical calibration, agency accounts and operational monitoring are unfinished. See `docs/ROADMAP.md`.
-
-## Production-style local run
+Install **Node.js 22 LTS or 24 LTS**, then:
 
 ```sh
-npm run build
-npm start
+npm ci
+npm run dev
 ```
 
-Open **http://127.0.0.1:3000**. The production server reads `.env` too. Set `PORT` if you need another port. Development uses ports 5173 (UI) and 8787 (API); `EMBERCAL_API_PORT` in `.env` changes the API port. If 5173 is busy, stop the conflicting process.
+Open **http://127.0.0.1:5173**. Stop with **Ctrl+C**. In VS Code you can also use **Terminal → Run Task → EmberCal: dev**.
 
-The local servers bind only to your computer by default. Do not expose them publicly without adding authentication and deployment controls.
+Build a static site into `dist/` with `npm run build`, and preview it with `npm run preview`.
+
+## Pages
+
+- **Overview** (`/overview`): landing page.
+- **Explore** (`/app`): area-of-interest map with rectangle, polygon and circle tools; coordinate, radius and GeoJSON area forms; historical calendar with raw, harmonized and anomaly modes; seasonal charts, annual ranking and tables; CSV, PNG and PDF exports; guided tour (`?tour`).
+- **Recent detections** (`/recent`): observations map and table, sensor filter, bounding-box selection, refresh button, CSV export.
+- **Watch areas** (`/alerts`): saved areas and a mock alert outbox.
+- **Methods** and **Accuracy**: methodology content.
+
+Regions: Sri Lanka, Pantanal (Brazil) and New South Wales (Australia).
+
+## Connecting your backend
+
+The places where data enters the UI:
+
+| What | Where | Today |
+| --- | --- | --- |
+| Connection status (top bar, Explore banner) | `web/src/api.ts` → `getConnectionStatus()` | returns `{ configured: false }` |
+| Recent detections for a region | `web/src/api.ts` → `getLiveSnapshot(regionId)` | loads `web/src/mock/<region>.json` |
+| "Refresh observations" button | `web/src/api.ts` → `refreshLiveSnapshot(regionId)` | same mock data, with a new timestamp |
+| Historical calendar, anomalies, charts | `web/src/analytics.mjs` → `fixture()`, `anomaly()` | synthetic numbers generated in the browser |
+| Explore-map hotspots | `web/src/analytics.mjs` → `points()` | synthetic points |
+| Regions list | `web/src/analytics.mjs` → `REGIONS` | hard-coded |
+| Watch areas and alerts | `web/src/main.tsx` (localStorage keys `embercal-watches`, `embercal-alerts`) | stored in the browser |
+
+`web/src/api.ts` documents the exact TypeScript response shapes (`ConnectionStatus`, `LiveSnapshot`, `Detection`). Replace each function body with a real request that returns the same shape, and the UI keeps working. To call a backend on another port during development, uncomment the `proxy` line in `vite.config.ts`.
 
 ## Tests
 
 ```sh
-npm test                 # JavaScript math, FIRMS and local-server integration
-npm run build            # TypeScript and production compilation
+npm test                 # math helpers in analytics.mjs
+npm run build            # type-check and production build
 npx playwright install chromium
 npm run test:browser     # browser flow checks; starts/stops its own dev server
 ```
 
-Browser checks cover navigation, charts, coordinate selection, drawing a rectangle, CSV/PDF/PNG downloads, observed records, mock alerts and mobile layout. Map tests use a deterministic local style so external tile outages do not break the test. To use an existing Chromium installation, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` to its executable path.
+## Notes
 
-See **TEST_REPORT.md** for checks performed on this downloadable release and their limits.
+Map tiles (CARTO / OpenStreetMap) and web fonts load from external providers. The mock observation files hold NASA FIRMS records saved on 14 November 2026. Sri Lanka's file is empty on purpose, so the page's no-detections state is visible.
 
-## Optional Python tools
-
-Python is **not needed** for the main app. For the extra API and scientific reference utilities, use Python 3.12:
-
-```sh
-python -m venv .venv
-```
-
-Activate with `.venv\Scripts\Activate.ps1` in PowerShell, or `source .venv/bin/activate` on macOS/Linux, then:
-
-```sh
-python -m pip install -r requirements.lock.txt
-python -m unittest discover -s pipeline -p "test_*.py"
-python -m uvicorn api.main:app --host 127.0.0.1 --port 8000
-```
-
-Open **http://127.0.0.1:8000/docs**. This optional Python API serves synthetic monthly examples; the main app uses the Node server, not this API. `/api/daily` and `/api/events` deliberately return 501 because authentic daily history and event clustering are not implemented.
-
-`python -m pipeline.demo --region sri_lanka` recreates the synthetic fixture. `python -m pipeline.import_archive archive.zip` imports FIRMS CSV archives to Parquet. The manual history downloader requires `FIRMS_MAP_KEY` in the process environment and uses resumable five-day windows; it does not run automatically.
-
-## Optional Docker
-
-With Docker Desktop running:
-
-```sh
-docker compose up --build
-```
-
-Open **http://localhost:3000**; the optional Python API is at **http://localhost:8000/docs**. Stop with `docker compose down`. The `.env` key is passed to the server at runtime and is not built into the image. See TEST_REPORT.md for the container test details.
-
-## Network and data limits
-
-Install requires internet access. Live refresh requires NASA FIRMS access; map tiles and web fonts use external providers. Charts, saved records, coordinate forms and exports remain available if the basemap cannot load. This is not an offline PWA. Saved observation snapshots were downloaded on **14 November 2026**; the UI shows fetch times and warns when stale.
-
-Maps: © OpenStreetMap contributors, © CARTO. Observations: NASA FIRMS MODIS C6.1 NRT and VIIRS NOAA-20/NOAA-21 375 m NRT. No NASA endorsement is implied. Project code: MIT licence. See `submission/ai_disclosure.md`.
+Maps: © OpenStreetMap contributors, © CARTO. Observations: NASA FIRMS MODIS C6.1 NRT and VIIRS NOAA-20/NOAA-21 375 m NRT. No NASA endorsement is implied. Project code: MIT licence.

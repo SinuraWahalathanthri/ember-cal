@@ -3,12 +3,12 @@
   "version": "0.2.0",
   "type": "module",
   "scripts": {
-    "dev": "node scripts/dev.mjs",
-    "build": "tsc -b && vite build && node scripts/build-worker.mjs",
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
     "test": "node --test tests/*.test.mjs",
-    "start": "node scripts/serve-worker.mjs",
     "test:browser": "node scripts/browser-smoke.mjs",
-    "format": "prettier --write web scripts worker tests vite.config.ts",
+    "format": "prettier --write web scripts tests vite.config.ts",
     "check": "npm test && npm run build"
   },
   "dependencies": {

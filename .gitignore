@@ -12,3 +12,4 @@ data/alerts_outbox/
 playwright-report/
 test-results/
 .vscode/*.log
+dist/

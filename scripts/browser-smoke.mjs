@@ -5,13 +5,13 @@ import { mkdir, readFile } from "node:fs/promises";
 const base = process.env.TEST_BASE_URL || "http://127.0.0.1:5173";
 const child = process.env.TEST_BASE_URL
   ? null
-  : spawn(process.execPath, ["scripts/dev.mjs"], { stdio: "pipe" });
+  : spawn(process.execPath, ["node_modules/vite/bin/vite.js"], { stdio: "pipe" });
 child?.stdout.on("data", () => {});
 child?.stderr.on("data", (c) => process.stderr.write(c));
 async function waitFor() {
   for (let i = 0; i < 120; i++) {
     try {
-      if ((await fetch(base + "/api/firms/status")).ok) return;
+      if ((await fetch(base + "/")).ok) return;
     } catch {}
     await new Promise((r) => setTimeout(r, 250));
   }

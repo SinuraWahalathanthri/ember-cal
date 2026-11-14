@@ -45,6 +45,11 @@ import {
   points,
   inBounds,
 } from "./analytics.mjs";
+import {
+  getConnectionStatus,
+  getLiveSnapshot,
+  refreshLiveSnapshot,
+} from "./api";
 import "./styles/tokens.css";
 import "./style.css";
 const fmt = (v: number) => Math.round(v).toLocaleString("en-US");
@@ -83,8 +88,7 @@ function IconLabel({ children, icon: Icon }: any) {
 function App() {
   const [connection, setConnection] = useState<boolean | null>(null);
   useEffect(() => {
-    fetch("/api/firms/status")
-      .then((r) => r.json())
+    getConnectionStatus()
       .then((d) => setConnection(Boolean(d.configured)))
       .catch(() => setConnection(false));
   }, []);
@@ -2222,10 +2226,8 @@ function Recent() {
     setError("");
     setSnapshot(null);
     setBounds(null);
-    fetch(`/api/live?region=${regionId}`)
-      .then(async (r) => {
-        const d = await r.json();
-        if (!r.ok) throw Error(d.error || "Could not load observations.");
+    getLiveSnapshot(regionId)
+      .then((d) => {
         if (active) setSnapshot(d);
       })
       .catch((e) => {
@@ -2250,14 +2252,7 @@ function Recent() {
     setRefreshing(true);
     setError("");
     try {
-      const r = await fetch(`/api/live/refresh?region=${regionId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: "{}",
-      });
-      const d = await r.json();
-      if (!r.ok) throw Error(d.error || "Refresh failed.");
-      setSnapshot(d);
+      setSnapshot(await refreshLiveSnapshot(regionId));
     } catch (e: any) {
       setError(e.message);
     } finally {

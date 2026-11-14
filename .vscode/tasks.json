@@ -22,7 +22,7 @@
         },
         "background": {
           "activeOnStart": true,
-          "beginsPattern": "EmberCal development:",
+          "beginsPattern": "VITE",
           "endsPattern": "Local:.*5173"
         }
       },

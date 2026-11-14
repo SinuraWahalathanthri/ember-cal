@@ -6,9 +6,8 @@ export default defineConfig({
     host: "127.0.0.1",
     port: 5173,
     strictPort: true,
-    proxy: {
-      "/api": `http://127.0.0.1:${process.env.EMBERCAL_API_PORT || 8787}`,
-    },
+    // When your backend is ready, proxy its routes here, e.g.:
+    // proxy: { "/api": "http://127.0.0.1:8000" },
   },
-  build: { outDir: "dist/client", chunkSizeWarningLimit: 1400 },
+  build: { outDir: "dist", chunkSizeWarningLimit: 1400 },
 });

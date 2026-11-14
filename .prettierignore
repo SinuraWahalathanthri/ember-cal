@@ -1,4 +1,4 @@
 node_modules
 work
 dist
-data
+web/src/mock
