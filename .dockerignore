@@ -1,0 +1,11 @@
+node_modules
+.git
+.env
+.env.*
+!.env.example
+dist
+__pycache__
+*.pyc
+.venv
+test-results
+playwright-report

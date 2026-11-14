@@ -1,0 +1,2 @@
+# AI assistance disclosure
+OpenAI Codex generated implementation code, tests and documentation using the user-supplied EmberCal brief. Automated checks cover selected math and API behavior and production compilation. No human field review, browser audit or scientific validation has been performed. The original document's requested Claude attribution is not copied because Claude was not used in this session.

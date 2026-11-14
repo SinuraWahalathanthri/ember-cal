@@ -1,0 +1,2 @@
+# Intended NASA data
+NASA FIRMS MODIS C6.1 MCD14ML/MCD14DL and VIIRS 375 m VNP14IMG, VJ114IMG and VJ214IMG are intended production inputs. The separate /recent view now uses actual five-day NRT area CSV snapshots for MODIS, NOAA-20 and NOAA-21 across Sri Lanka, Pantanal and New South Wales. Historical calibration is not complete. Product DOIs, source availability and mission timelines must be verified against authoritative NASA documentation before submission.
